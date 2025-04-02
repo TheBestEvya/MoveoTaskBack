@@ -19,6 +19,7 @@
   },
   "scripts": {
     "dev": " cp .env.dev .env && ts-node app.ts",
-    "buildAndDev": "tsc && node dist/app.js"
+    "buildAndDev": "cp .env.dev .env && tsc && node dist/app.js",
+    "prod" : "cp .env.prod .env && tsc && node dist/app.js"
   }
 }

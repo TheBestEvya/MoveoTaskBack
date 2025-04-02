@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 //images?
 app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
 //production route - serve html files from react
-app.use(express.static(path.resolve(__dirname , '..' , '../front')))
+// app.use(express.static(path.resolve(__dirname , '..' , '../front')))
 
 //error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -52,7 +52,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 //Routes
 
 app.use('/api/codeBlocks', codeBlockRoutes);
-
+app.use( (req,res)=>{
+    // res.sendFile(path.resolve(__dirname , '..' , '../front/index.html'))
+    res.status(404).json({ message: 'Route not found' });
+  })
 server.listen(port, () => {
     console.log(`Server is running on port ${port} -   ${env}`);
 });
