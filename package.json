@@ -1,6 +1,21 @@
 {
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^5.1.0",
-    "mongoose": "^8.13.1"
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
+    "mongoose": "^8.13.1",
+    "tsc": "^2.0.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/node": "^22.13.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "dev": "ts-node app.ts",
+    "buildAndDev": "tsc && node dist/app.js"
   }
 }
