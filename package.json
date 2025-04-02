@@ -18,7 +18,7 @@
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "dev": "ts-node app.ts",
+    "dev": " cp .env.dev .env && ts-node app.ts",
     "buildAndDev": "tsc && node dist/app.js"
   }
 }
