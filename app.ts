@@ -1,20 +1,36 @@
 import express, { Express } from 'express';
 import https from "https"
+import http from "http"
 import fs from "fs"
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
 import cors from 'cors'
 import connectDB from './db';
+import codeBlockRoutes from './src/routes/codeBlockRoutes';
+import "./socket"; 
+
 dotenv.config();
 const port = process.env.PORT;
 const app = express();
 connectDB();
+const env = process.env.NODE_ENV;
+let server: any;
+
 //socket io
 
 
 //certificates for https
-
+if(env !== 'development') {
+const options = {
+    key: fs.readFileSync(process.env.SSL_KEY_PATH || ''),
+    cert: fs.readFileSync(process.env.SSL_CERT_PATH || '')
+  };
+  
+    server = https.createServer(options, app);
+}else{
+    server = http.createServer(app);
+}
 app.use(cors({
     origin: [process.env.FRONTEND_URL || 'http://localhost:5173'],
     credentials: true,
@@ -35,8 +51,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 //Routes
 
+app.use('/api/codeBlocks', codeBlockRoutes);
 
-
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+server.listen(port, () => {
+    console.log(`Server is running on port ${port} -   ${env}`);
 });
+
+export { app, server, port };
