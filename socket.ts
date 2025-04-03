@@ -1,4 +1,4 @@
-import { Server } from "socket.io";
+import { Server } from "Socket.io";
 import { server } from "./app"; // Import the server
 
 const io = new Server(server, {
@@ -10,11 +10,13 @@ const io = new Server(server, {
 
 const rooms: Record<string, { code: string; solution: string; mentor: string; students: string[] }> = {};
 
-io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+io.on("connection", (userSocket) => {
 
-  socket.on("joinRoom", ({ roomId }) => {
+  userSocket.on("joinRoom", ({ roomId }) => {
+    console.log(userSocket.id, "joined room");
     if (!rooms[roomId]) {
+      //TODO :: fetch code block from DB and assign?
+      //Room creation
       rooms[roomId] = {
         code: `// Code block ${roomId} template`,
         solution: `console.log('Hello, World!');`, // Example solution
@@ -22,48 +24,65 @@ io.on("connection", (socket) => {
         students: []
       };
     }
-
+    //only if the user is not already in the room
+    if(!rooms[roomId].students.includes(userSocket.id) ||rooms[roomId].mentor === userSocket.id){
+    //assign the mentor to the room
     if (!rooms[roomId].mentor) {
-      rooms[roomId].mentor = socket.id;
-      socket.emit("role", "mentor");
+      rooms[roomId].mentor = userSocket.id;
+      userSocket.emit("role", "mentor");
     } else {
-      rooms[roomId].students.push(socket.id);
-      socket.emit("role", "student");
+      rooms[roomId].students.push(userSocket.id);
+      userSocket.emit("role", "student");
     }
 
-    socket.join(roomId);
-    socket.emit("codeUpdate", rooms[roomId].code);
+    userSocket.join(roomId);
+    userSocket.emit("codeUpdate", rooms[roomId].code);
     io.to(roomId).emit("studentsCount", rooms[roomId].students.length);
-
-    console.log(`User ${socket.id} joined room: ${roomId}`);
-  });
-
-  socket.on("codeUpdate", ({ roomId, code }) => {
-    rooms[roomId].code = code;
-    socket.to(roomId).emit("codeUpdate", code);
-  });
-
-  socket.on("disconnectFromRoom", ({ roomId }) => {
-    if (rooms[roomId]) {
-      rooms[roomId].students = rooms[roomId].students.filter(id => id !== socket.id);
-      
-      if (rooms[roomId].mentor === socket.id) {
-        if (rooms[roomId].students.length > 0) {
-          const newMentor = rooms[roomId].students.shift(); // Assign the first student as mentor
-          rooms[roomId].mentor = newMentor!;
-          io.to(newMentor!).emit("role", "mentor");
-          console.log(`New mentor assigned: ${newMentor}`);
-        } else {
-          delete rooms[roomId]; // No students left, delete room
-        }
-      }
-
-      io.to(roomId).emit("studentsCount", rooms[roomId].students.length);
-      socket.to(roomId).emit("studentLeft");
+    
     }
-
-    console.log(`User disconnected: ${socket.id}`);
   });
 
-  console.log(`User disconnected: ${socket.id}`);
+  userSocket.on("codeUpdate", ({ roomId, code }) => {
+    rooms[roomId].code = code;
+    userSocket.to(roomId).emit("codeUpdate", code);
+  });
+
+  userSocket.on("disconnectFromRoom", ({ roomId }) => {
+    //mentor leaving
+    if (rooms[roomId].mentor === userSocket.id) {
+      if (rooms[roomId].students.length > 0) {
+        userSocket.to(roomId).emit("mentorLeft", "the mentor has left the session");
+      } 
+        delete rooms[roomId]; 
+      
+    }
+    //student leaving
+    else{
+      rooms[roomId].students = rooms[roomId].students.filter(id => id !== userSocket.id);
+      userSocket.to(roomId).emit("studentLeft");
+    }
+    console.log(`User disconnected: ${userSocket.id}`);
+  });
+
+ userSocket.on("sendMessage", ({ senderId, message, timestamp, roomId }) => {
+
+  const chatMessage = {
+    senderId,
+    message,
+    timestamp,
+  };
+
+  // Broadcast the message to all users in the room
+  io.to(roomId).emit("newMessage", chatMessage);
 });
+
+userSocket.on("solutionUpdateByMentor", ({ roomId, code }) => {
+  rooms[roomId].solution = code;
+  userSocket.to(roomId).emit("solutionUpdateForStudents", code);
+
+});
+
+});
+
+
+export { io };

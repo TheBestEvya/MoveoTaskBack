@@ -8,8 +8,7 @@ solution: string;
 }
 const codeBlockSchema = new Schema<IBlock>({
     code: {
-        type: String,
-        required: true,
+        type: String
     },
     title: {
         type: String,
