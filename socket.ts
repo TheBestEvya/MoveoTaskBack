@@ -1,4 +1,4 @@
-import { Server } from "Socket.io";
+import { Server } from "socket.io";
 import { server } from "./app"; // Import the server
 import { codeBlock } from "./src/models/codeBlockModel";
 const io = new Server(server, {
