@@ -3,7 +3,6 @@ import codeBlockController from '../controllers/codeController';
 
 const router = express.Router();
 
-//TODO :: Finish codeBlock routes - after controller implementation
 router.get('/all',codeBlockController.getAllCodeBlocks)
 router.get('/:id',codeBlockController.getCodeBlockById)
 router.post('/',codeBlockController.createCodeBlock)
