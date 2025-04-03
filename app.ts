@@ -8,7 +8,7 @@ import path from 'path';
 import cors from 'cors'
 import connectDB from './db';
 import codeBlockRoutes from './src/routes/codeBlockRoutes';
-import "./socket"; 
+import { io } from './socket'; // Import the io instance from socket.ts
 
 dotenv.config();
 const port = process.env.PORT;
@@ -17,7 +17,6 @@ connectDB();
 const env = process.env.NODE_ENV;
 let server: any;
 
-//socket io
 
 
 //certificates for https
@@ -31,6 +30,10 @@ const options = {
 }else{
     server = http.createServer(app);
 }
+
+
+io.attach(server);
+
 app.use(cors({
     origin: [process.env.FRONTEND_URL || 'http://localhost:5173'],
     credentials: true,
