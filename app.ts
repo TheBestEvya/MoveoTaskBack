@@ -17,19 +17,8 @@ connectDB();
 const env = process.env.NODE_ENV;
 let server: any;
 
-
-
-//certificates for https
-if(env !== 'development') {
-const options = {
-    key: fs.readFileSync(process.env.SSL_KEY_PATH || ''),
-    cert: fs.readFileSync(process.env.SSL_CERT_PATH || '')
-  };
-  
-    server = https.createServer(options, app);
-}else{
     server = http.createServer(app);
-}
+
 
 
 io.attach(server);
@@ -43,8 +32,6 @@ app.use(express.urlencoded({ extended: true }));
 
 //images?
 app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
-//production route - serve html files from react
-// app.use(express.static(path.resolve(__dirname , '..' , '../front')))
 
 //error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -56,7 +43,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 app.use('/api/codeBlocks', codeBlockRoutes);
 app.use( (req,res)=>{
-    // res.sendFile(path.resolve(__dirname , '..' , '../front/index.html'))
     res.status(404).json({ message: 'Route not found' });
   })
 server.listen(port, () => {
