@@ -1,13 +1,16 @@
 import { Server } from "Socket.io";
 import { server } from "./app"; // Import the server
-
+import { codeBlock } from "./src/models/codeBlockModel";
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"]
   }
 });
-
+const fetchCodeBlock = async (roomId: string) => {
+const codeBlockData = await codeBlock.findOne({ _id: roomId });
+return codeBlockData;
+}
 const rooms: Record<string, { code: string; solution: string; mentor: string; students: string[] }> = {};
 
 io.on("connection", (userSocket) => {
@@ -15,14 +18,18 @@ io.on("connection", (userSocket) => {
   userSocket.on("joinRoom", ({ roomId }) => {
     console.log(userSocket.id, "joined room");
     if (!rooms[roomId]) {
-      //TODO :: fetch code block from DB and assign?
       //Room creation
       rooms[roomId] = {
-        code: `// Code block ${roomId} template`,
-        solution: `console.log('Hello, World!');`, // Example solution
+        code: ``,
+        solution: ``,
         mentor: "",
         students: []
       };
+      fetchCodeBlock(roomId).then((codeBlockData) => {
+        rooms[roomId].code = codeBlockData.code;
+        rooms[roomId].solution = codeBlockData.solution;
+      })
+
     }
     //only if the user is not already in the room
     if(!rooms[roomId].students.includes(userSocket.id) ||rooms[roomId].mentor === userSocket.id){
